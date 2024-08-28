@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ .Chart.Name }}"
+  labels:
+    {{- include "eric-oss-adc-app-engineering.labels" . | nindent 4 }}
+    {{- include "eric-oss-adc.service-mesh-inject" .| nindent 4 }}
+    {{- include "eric-oss-adc.service-mesh-ism2osm-labels" .| nindent 4 }}
+  annotations:
+    {{- include "eric-oss-adc.service-mesh-inject" .| nindent 4 }}
+    {{- include "eric-oss-adc.service-mesh-volume" .| nindent 4 }}
+spec:
+  volumes:
+    - name: "{{ .Chart.Name }}-reports"
+      emptyDir: {}
+    - name: "{{ .Chart.Name }}-logs"
+      emptyDir: {}
+  containers:
+    - name: "{{ $.Chart.Name }}"
+      image: {{ $.Values.images.testwareImage | quote }}
+      env:
+        - name: "APP_VERSION"
+          value: "{{- include "get-application-version" . | trim | default "undefined" }}"
+        - name: "BUILD_URL"
+          value: {{ $.Values.env.BUILD_URL }}
+        - name: "STAGING_TYPE"
+          value: {{ $.Values.env.STAGING_TYPE }}
+        - name: "PRODUCT"
+          value: {{ $.Values.env.PRODUCT }}
+        - name: "PRODUCT_VERSION"
+          value: "{{- include "get-product-version" . | trim | default "undefined" }}"
+        - name: "ENVIRONMENT"
+          value: {{ $.Values.env.ENVIRONMENT }}
+        - name: "TARGET_NAMESPACE"
+          value: {{ $.Release.Namespace }}
+        - name: "hostname_url"
+          valueFrom:
+            configMapKeyRef:
+              name: testware-hostnames
+              key: adc
+        - name: "TARGET_CLUSTER"
+          valueFrom:
+            configMapKeyRef:
+              name: testware-global-config
+              key: cluster-name
+        - name: "TLS"
+          valueFrom:
+            configMapKeyRef:
+              name: testware-global-config
+              key: tls-enabled
+        - name: "RESTSim_URL"
+          value: {{ $.Values.env.RESTSim_URL }}
+        - name: OPTIONS_FILE
+          value: "/resources/config/{{ $.Values.env.OPTIONS_FILE }}"
+        - name: "sftp_podname"
+          value: {{ $.Values.env.sftp_podname }}
+        - name: "fns_job"
+          value: {{ $.Values.env.fns_job }}
+        - name: "Ran_parser_job"
+          value: {{ $.Values.env.Ran_parser_job }}
+        - name: "metrics_url"
+          value: "{{- include "get-metrics-url" . | trim | default "undefined" }}"
+        - name: "GAS_hostname"
+          valueFrom:
+            configMapKeyRef:
+              name: testware-hostnames
+              key: gas
+        - name: "pmStatsfilecount"
+          value: {{ $.Values.env.pmStatsfilecount | quote }}
+        - name: "TESTWARE_NAME"
+          value: {{ $.Values.env.TESTWARE_NAME }}
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: testware-resources-secret
+              key: database_url
+        - name: K6_TOOL_GUI_URL
+          valueFrom:
+            secretKeyRef:
+              name: testware-resources-secret
+              key: gui_url
+        - name: API_URL
+          valueFrom:
+            secretKeyRef:
+              name: testware-resources-secret
+              key: api_url
+      volumeMounts:
+        - name: "{{ $.Chart.Name }}-reports"
+          mountPath: "/reports"
+        - name: "{{ .Chart.Name }}-logs"
+          mountPath: "/var/log"
+      imagePullPolicy: Always
+      resources: {}
+      securityContext:
+        allowPrivilegeEscalation: true
+        runAsNonRoot: false
+        runAsUser: 0
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+  dnsPolicy: ClusterFirst
+  imagePullSecrets:
+    - name: k8s-registry-secret
+  schedulerName: default-scheduler
+  restartPolicy: Never
+  securityContext: {}
+  terminationGracePeriodSeconds: 5

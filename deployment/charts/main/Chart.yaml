@@ -1,0 +1,36 @@
+apiVersion: v2
+dependencies:
+  # eric-oss-fls is used to expose the endpoints and provide access to the PM File metadata
+  - alias: eric-oss-fls-enm-1
+    condition: eric-oss-pm-fls-umbrella.enabled
+    name: eric-oss-fls
+    repository: file://eric-oss-fls
+    version: 1.0.0-19
+  - alias: eric-oss-fls-enm-2
+    condition: eric-oss-pm-fls-umbrella-2.enabled
+    name: eric-oss-fls
+    repository: file://eric-oss-fls
+    version: 1.0.0-19
+  # eric-oss-fls-notifier exposes the endpoint for instrumentation data
+  - name: eric-oss-fls-notifier
+    repository: file://eric-oss-fls-notifier
+    version: 0.1.0
+  # eric-oss-pm-solution is used to generate the counters and events files (PM Files)
+  - alias: eric-oss-pm-solution-enm-1
+    condition: eric-oss-pm-fls-umbrella.enabled
+    name: eric-oss-pm-solution
+    repository: file://eric-oss-pm-solution
+    version: 1.0.0-31
+  - alias: eric-oss-pm-solution-enm-2
+    condition: eric-oss-pm-fls-umbrella-2.enabled
+    name: eric-oss-pm-solution
+    repository: file://eric-oss-pm-solution
+    version: 1.0.0-31
+  - condition: kafka-wrapper.enabled
+    name: kafka-wrapper
+    repository: file://kafka-wrapper
+    version: 1.0.50-2
+name: ${name}
+description: Testware for eric-oss-adc-app-engineering
+type: application
+version: ${version}

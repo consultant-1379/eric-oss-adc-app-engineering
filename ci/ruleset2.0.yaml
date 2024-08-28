@@ -1,0 +1,110 @@
+modelVersion: 2.0
+description: "Middleman: ADC k6 testsuite Pipeline"
+docker-images:
+  - bob-py3-kube-helm-builder: armdocker.rnd.ericsson.se/proj-adp-cicd-drop/bob-py3kubehelmbuilder:latest
+  - testware-cli: armdocker.rnd.ericsson.se/proj-eric-oss-drop/k6-reporting-tool-cli:latest
+properties:
+  - testsuite-dir: .
+  - testsuite-image-name: adc-k6-testsuite
+  - kube-config-path: ./admin.conf
+  - ADC-TESTWARE-NAME: eric-oss-adc-app-engineering
+  - REPO: eric-oss-adc-app-engineering
+  - TESTWARE_PATH: https://arm.seli.gic.ericsson.se/artifactory/proj-eric-oss-drop-helm-local
+
+env:
+  - PWD
+  - HOME
+  - KUBECONFIG 
+  - NAMESPACE
+  - BUILD_DIR (default=./build)
+  - BUILD_URL
+  - ADC_HOSTNAME
+  - GAS_HOSTNAME
+  - FUNCTIONAL_USER_USERNAME
+  - FUNCTIONAL_USER_PASSWORD
+
+
+  
+var:
+  - helm-chart-directory
+  - id
+
+rules:
+
+  deploy-testware:
+    - task: deploy-testwaree
+      cmd:
+        - helm repo remove ${REPO} || true 
+        - helm repo add ${REPO} ${TESTWARE_PATH} --username ${env.FUNCTIONAL_USER_USERNAME} --password ${env.FUNCTIONAL_USER_PASSWORD}
+        - helm install ${ADC-TESTWARE-NAME} ${REPO}/${ADC-TESTWARE-NAME} --version "" --namespace ${env.NAMESPACE} --set env.BUILD_URL=${env.BUILD_URL} --set env.hostname=${env.ADC_HOSTNAME} --set env.fns_job="kubernetes-pods-istio-secure" --set env.ENVIRONMENT=production --set env.sftp_podname="kubernetes-pods-istio-secure" --set env.Ran_parser_job="kubernetes-pods-istio-secure" --set env.GAS_hostname=${env.GAS_HOSTNAME} --set env.metrics_url="gas_url" --set kafka-wrapper.enabled=true --set env.TLS=true
+
+  create-job:
+    - task: create-job
+      docker-image: testware-cli
+      docker-flags:
+        - "-t"
+        - "-v ${env.PWD}:${env.PWD}"
+        - "--user $(id -u):$(id -g)"
+      cmd: 
+        - testware-cli create-job --jenkins-url ${env.BUILD_URL} --timeout 3600
+
+  wait-testware:
+    - task: wait-testware
+      docker-image: testware-cli
+      docker-flags:
+        - "-t"
+        - "-v ${env.PWD}:${env.PWD}"
+        - "--user $(id -u):$(id -g)"
+      cmd: 
+        - testware-cli wait-testware --url ${env.BUILD_URL}  --path ${env.PWD} --delay 30 --retries 65
+
+  collect-log:
+    - task: collect-pod-log
+      cmd: kubectl logs ${ADC-TESTWARE-NAME} --namespace ${env.NAMESPACE} >${env.PWD}/${ADC-TESTWARE-NAME}.log
+    - task: get-id
+      cmd: grep id execution-status.properties | cut -c4- > .bob/var.id
+    - task: collect-log-k6
+      docker-image: testware-cli
+      docker-flags:
+        - "-t"
+        - "-v ${env.PWD}:${env.PWD}"
+        - "--user $(id -u):$(id -g)"
+      cmd: 
+        - testware-cli download-log --id ${var.id} --type k6 --path ${env.PWD}
+    - task: collect-log-summary
+      docker-image: testware-cli
+      docker-flags:
+        - "-t"
+        - "-v ${env.PWD}:${env.PWD}"
+        - "--user $(id -u):$(id -g)"
+      cmd: 
+        - testware-cli download-log --id ${var.id}  --type summary --path ${env.PWD}
+
+  uninstall-testware:
+   - task: uninstall-testware
+     cmd: helm uninstall ${ADC-TESTWARE-NAME} --namespace ${env.NAMESPACE}
+  build-image:
+    - task: build-image
+      cmd: ${env.PWD}/deployment/docker/buildImage.sh 
+        
+  copy-testsuite-report:
+    - task: copy-testsuite-report
+      cmd:
+        - chmod +x ${env.PWD}/ci/scripts/copy_report_k6.sh
+        - ${env.PWD}/ci/scripts/copy_report_k6.sh ${kube-config-path} ${env.NAMESPACE} ${env.PWD}
+  collect-adp-log: 
+    - task: collect-adp-log
+      cmd:
+        - chmod +x ${env.PWD}/ci/scripts/ADP_logs.sh
+        - ${env.PWD}/ci/scripts/ADP_logs.sh ${env.NAMESPACE}
+  copy-html-report:
+    - task: copy-html-report
+      cmd: kubectl cp ${env.NAMESPACE}/adc-k6-testsuite:/reports/result.html ${env.PWD}/eric-oss-adc-k6-report.html
+  delete-k6-pod:
+    - task: delete-k6-pod
+      cmd: kubectl --namespace ${env.NAMESPACE} delete pod adc-k6-testsuite
+  build-testsuite-image:
+    - task: docker-build
+      cmd: docker build ${env.PWD}/${testsuite-dir}
+        --tag ${testsuite-image-name}:latest
+ 

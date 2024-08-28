@@ -1,0 +1,132 @@
+replicaCount: 1
+
+global:
+  networkPolicy:
+    enabled: true
+  registry:
+    url: armdocker.rnd.ericsson.se
+  pullSecret: "k8s-registry-secret"
+
+
+eric-oss-pm-fls-umbrella:
+  enabled: true
+eric-oss-pm-fls-umbrella-2:
+  enabled: true
+eric-oss-fls-enm-1:
+  fullnameOverride: "eric-oss-fls-enm-1"
+  eric-data-document-database-pg:
+    nameOverride: eric-oss-fls-enm-1-postgres-db
+    createSecret: true
+  pipeline:
+    enabled: true
+    radionode: 10500
+    pcc: 50
+    pcg: 50
+    lte_ctr: 500
+    nr_ctr: 30000
+    ebsn: 5
+    cnf: 3240
+eric-oss-fls-enm-2:
+  fullnameOverride: "eric-oss-fls-enm-2"
+  eric-data-document-database-pg:
+    nameOverride: eric-oss-fls-enm-2-postgres-db
+    credentials:
+      kubernetesSecretName: eric-oss-fls-enm-2-usersecret
+    createSecret: false
+    networkPolicy:
+      matchLabels: 
+        - eric-oss-fls-enm-2
+  pipeline:
+    enabled: true
+
+eric-oss-pm-solution-enm-1:
+  fullnameOverride: "eric-oss-pm-solution-enm-1"
+  on_demand: true
+  replay_enabled: true
+  playback_enabled: true
+  enm_id_list:
+    - "enm_1"
+
+  nr:
+    sims_per_enm: 8
+    nes_per_sim: 1250
+    total_started: 10000
+    stats_files: 5500
+    ctr_files: 30000
+
+  pcc:
+    sims_per_enm: 2
+    nes_per_sim: 25
+    total_started: 50
+
+  pcg:
+    sims_per_enm: 2
+    nes_per_sim: 25
+    total_started: 50
+    
+  lte_dg2:
+    sims_per_enm: 10
+    nes_per_sim: 500
+    total_started: 5000
+    stats_files: 5000
+    ctr_files: 500
+  cnf_vdu:
+    sims_per_enm: 8
+    nes_per_sim: 1080
+  cnf_vcucp:
+    sims_per_enm: 8
+    nes_per_sim: 1080
+  cnf_vcuup:
+    sims_per_enm: 8
+    nes_per_sim: 1080
+    
+
+eric-oss-pm-solution-enm-2:
+  fullnameOverride: "eric-oss-pm-solution-enm-2"
+  on_demand: true 
+  enm_id_list:
+    - "enm_2"
+
+kafka-wrapper:
+  enabled: false
+
+
+init:
+  repo: proj-edca-dev
+  clusterName: EIC
+  connectedSystem: eric-eo-subsystem-management
+  scriptingVM: eric-oss-pm-solution-enm-1
+  scriptingVM2: eric-oss-pm-solution-enm-2
+  sftp-username: flsuser1
+  sftp-password: flspass@12
+  sftp-port: 2020
+  enm-name: enm1
+  enm2-name: enm2
+  adapterLink: placeholder-to-just-get-connected-systems-entry-working
+  url: http://eric-oss-fls-enm-1
+  url-enm-stub-2: http://eric-oss-fls-enm-2
+
+eric-oss-adc-curl-init:
+  image: eric-oss-adc-curl-init
+  version: 0.1.0-1
+
+images:
+  testwareImage: ${defaultDockerTag}
+
+build:
+  version: ${version}
+  name: ${name}
+
+env:
+  BUILD_URL: ""
+  STAGING_TYPE: "APPLICATION"
+  PRODUCT: ""
+  ENVIRONMENT: "development"
+  OPTIONS_FILE: "default.options.json"
+  sftp_podname : "eric-oss-sftp-filetrans"
+  fns_job : "eric-oss-enm-fns"
+  RESTSim_URL : "http://eric-oss-pm-solution-enm-1:4545"
+  Ran_parser_job : "eric-oss-3gpp-pm-xml-ran-parser"
+  pmStatsfilecount : 23240
+  TESTWARE_NAME : "eric-oss-adc-app-test"
+  TEST_VERSION: ${version}

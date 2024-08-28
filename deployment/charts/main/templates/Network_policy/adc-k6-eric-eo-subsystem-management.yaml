@@ -1,0 +1,15 @@
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: adc-k6-eric-eo-subsystem-management
+  labels:
+    app : eric-eo-subsystem-management
+spec:
+  podSelector:
+    matchLabels:
+      app : eric-eo-subsystem-management
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name : eric-oss-adc-app-engineering

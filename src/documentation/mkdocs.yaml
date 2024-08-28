@@ -1,0 +1,60 @@
+site_name:  ADC App-Engineering
+copyright: Copyright &copy; 2023 Ericsson AB - All Rights Reserved
+
+use_directory_urls: false
+site_dir: /site/docs
+
+theme:
+  name: material
+  logo: img/ericsson_econ.svg
+  favicon: img/favicon.ico
+  font: false
+  custom_dir: overrides
+  features:
+    - navigation.instant
+    - navigation.sections
+
+extra_css:
+  - css/extra.css
+
+extra_javascript:
+  - javascript/extra.js
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+
+extra:
+  generator: false
+
+plugins:
+  - search
+  - glightbox
+  - build_plantuml:
+      render: "local"
+      bin_path: "/usr/bin/plantuml"
+      output_format: "svg"
+      diagram_root: "docs/diagrams"
+      output_folder: "gen"
+      input_folder: "src"
+      input_extensions: "puml"
+
+nav:
+  - Home: 'index.md'
+  - Analytics Data Collection Testware:
+      - UseCases: 
+          - PMSTATS file collection from ENM and parsing by Ran-Parser : 'testware-doc/UseCase/pmstats_useCase.md'
+          - 5Gpmevent file collection from ENM: 'testware-doc/UseCase/5Gpmevent_useCase.md'
+          - PCC_PCG file collection from ENM and parsing by Core parser : 'testware-doc/UseCase/Corefiles_useCase.md'
+          - VES_collector Flow : 'testware-doc/UseCase/Ves_collector.md'
+          - 4G_PMEVENT file collection from ENM and parsing by 4G_PMEVENT_parser : 'testware-doc/UseCase/4G_pmevent_usecase.md'
+          - FNS_DC-C_Registration : 'testware-doc/UseCase/FNS_DCC_Registration_useCase.md'
+          - SFTP-FT_DC-C_Registration : 'testware-doc/UseCase/SFTP-FT_DCC_useCase.md'
+          - SFTP-FT_core_DC-C_Registration : 'testware-doc/UseCase/SFTP-FT__core_DCC_useCase.md'
+          - 4Gpmevent_DC-C_Registration : 'testware-doc/UseCase/4G_pmevent_DCC_usecase.md'
+          - Static_File_validation : 'testware-doc/UseCase/Static_file_validation.md'
+      - Required Variable: 'testware-doc/variable.md'
+      - Scenarios :
+          - Setup: 'testware-doc/Setup.md'
+          - Teardown: 'testware-doc/Teardown.md'
+          - Scenarios: 'testware-doc/scenario.md'

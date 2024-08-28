@@ -1,0 +1,11 @@
+{{- if (eq (include "eric-data-document-database-pg.operator-enabled" .) "true") }}
+{{- if .Values.global -}}
+{{- if and .Values.global.networkPolicy .Values.networkPolicy -}}
+{{- if and .Values.global.networkPolicy.enabled .Values.networkPolicy.enabled -}}
+{{- if eq (include "eric-data-document-database-pg.isOpMigrationRequired" .) "true" -}}
+  {{- include "eric-data-document-database-pg.opNetworkPolicyHook" .}}
+{{- end -}}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

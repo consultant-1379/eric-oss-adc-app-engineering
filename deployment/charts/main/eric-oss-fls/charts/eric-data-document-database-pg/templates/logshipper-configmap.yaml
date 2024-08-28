@@ -1,0 +1,11 @@
+{{/*
+Logshipper configuration for:
+  - brAgent
+  - postgres
+*/}}
+{{- if (eq (include "eric-data-document-database-pg.log.streamingMethod" .) "true") }}
+  {{- $logshipperValues := fromJson (include "eric-data-document-database-pg.ls-values" .) -}}
+  {{- $logshipperCopied := deepCopy . -}}
+  {{- $logshipperMerged := (mergeOverwrite $logshipperCopied $logshipperValues) -}}
+  {{- include "eric-log-shipper-sidecar.logshipper-sidecar-configmap" $logshipperMerged }}
+{{- end }}

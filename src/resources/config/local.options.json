@@ -1,0 +1,50 @@
+{
+    "insecureSkipTLSVerify": true,
+    "setupTimeout": "180s",
+    "thresholds": {
+      "Get FNS_throughput for sftp-ft{scenario:pmstats_e2e_flow_internal}": ["count > 0"],
+      "Get FNS_throughput for pmevent{scenario:pmevent_e2e_flow_internal}": ["count > 0"]
+    },
+    "scenarios": {
+       "sub": {
+            "exec": "sub",
+            "executor": "per-vu-iterations",
+            "startTime": "5s",
+            "vus": 1,
+            "iterations": 1,
+            "maxDuration": "5m"
+        },
+        "FNS_DCC_reg_internal": {
+            "exec": "FNS_DCC_reg_internal",
+            "startTime": "40s",
+            "executor": "per-vu-iterations",
+            "vus": 1,
+            "iterations": 1,
+            "maxDuration": "15m"
+        },
+        "pmstats_e2e_flow_internal": {
+            "exec": "pmstats_e2e_flow_internal",
+            "startTime": "60s",
+            "executor": "per-vu-iterations",
+            "vus": 1,
+            "iterations": 1,
+            "maxDuration": "16m"
+        },
+        "SFTP_DCC_reg_internal": {
+            "exec": "SFTP_DCC_reg_internal",
+            "startTime": "120s",
+            "executor": "per-vu-iterations",
+            "vus": 1,
+            "iterations": 1,
+            "maxDuration": "15m"
+        },
+      "ranParser_OutputTopic_Validation": {
+        "exec": "ranParser_OutputTopic_Validation",
+        "startTime": "60s",
+        "executor": "per-vu-iterations",
+        "vus": 1,
+        "iterations": 1,
+        "maxDuration": "15m"
+      }
+    }
+  }

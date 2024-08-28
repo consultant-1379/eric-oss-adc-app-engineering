@@ -1,0 +1,10 @@
+productName: "RESTSim File Lookup Service"
+productNumber: "CXP00000"
+images:
+  fls:
+    productName: "RESTSim File Lookup Service Image"
+    productNumber: "CXP00000"
+    registry: "armdocker.rnd.ericsson.se"
+    repoPath: "proj-eric-oss-fls/proj-eric-oss-fls-drop"
+    name: "eric-oss-fls"
+    tag: "1.0.0-19"

@@ -1,0 +1,134 @@
+{
+  "insecureSkipTLSVerify": true,
+  "teardownTimeout": "180s",
+  "setupTimeout": "700s",
+  "scenarios": {
+     "subscription": {
+          "exec": "subscription",
+          "executor": "per-vu-iterations",
+          "startTime": "5s",
+          "vus": 1,
+          "iterations": 1,
+          "maxDuration": "12m"
+      },
+      "Ves_collector_flow_external": {
+          "exec": "Ves_collector_flow_external",
+          "executor": "per-vu-iterations",
+          "vus": 1,
+          "iterations": 1,
+          "maxDuration": "5m"
+      },
+      "FNS_DCC_reg_internal": {
+          "exec": "FNS_DCC_reg_internal",
+          "startTime": "80s",
+          "executor": "per-vu-iterations",
+          "vus": 1,
+          "iterations": 1,
+          "maxDuration": "15m"
+      },
+      "pmstats_e2e_flow_internal": {
+          "exec": "pmstats_e2e_flow_internal",
+          "startTime": "5s",
+          "executor": "per-vu-iterations",
+          "vus": 1,
+          "iterations": 1,
+          "maxDuration": "24m"
+      },
+      "pmevent_e2e_flow_internal": {
+          "exec": "pmevent_e2e_flow_internal",
+          "startTime": "5s",
+          "executor": "per-vu-iterations",
+          "vus": 1,
+          "iterations": 1,
+          "maxDuration": "24m"
+      },
+      "pmevent_4G_e2e_flow_internal": {
+          "exec": "pmevent_4G_e2e_flow_internal",
+          "startTime": "5s",
+          "executor": "per-vu-iterations",
+          "vus": 1,
+          "iterations": 1,
+          "maxDuration": "24m"
+      },
+      "SFTP_DCC_reg_internal": {
+          "exec": "SFTP_DCC_reg_internal",
+          "startTime": "120s",
+          "executor": "per-vu-iterations",
+          "vus": 1,
+          "iterations": 1,
+          "maxDuration": "15m"
+      },
+      "SFTP_Core_DCC": {
+          "exec": "SFTP_Core_DCC",
+          "startTime": "150s",
+          "executor": "per-vu-iterations",
+          "vus": 1,
+          "iterations": 1,
+          "maxDuration": "15m"
+      },
+      "pmEvent_DC_C_Validations": {
+          "exec": "pmEvent_DC_C_Validations",
+          "startTime": "190s",
+          "executor": "per-vu-iterations",
+          "vus": 1,
+          "iterations": 1,
+          "maxDuration": "15m"
+    },
+      "corestats_e2e_flow_internal": {
+          "exec": "corestats_e2e_flow_internal",
+          "startTime": "5s",
+          "executor": "per-vu-iterations",
+          "vus": 1,
+          "iterations": 1,
+          "maxDuration": "24m"
+      },
+   "ContentMessage_Validation_3gPP_RANTopic": {
+      "exec": "ContentMessage_Validation_3gPP_RANTopic",
+      "startTime": "10s",
+      "executor": "per-vu-iterations",
+      "vus": 1,
+      "iterations": 1,
+      "maxDuration": "24m"
+    },
+    "Validate_OutputKafkaTopic": {
+       "exec": "Validate_OutputKafkaTopic",
+       "startTime": "120s",
+       "executor": "per-vu-iterations",
+       "vus": 1,
+       "iterations": 1,
+       "maxDuration": "10m"
+     },
+    "pmEvent_4G_DC_C_Validations": {
+      "exec": "pmEvent_4G_DC_C_Validations",
+      "startTime": "180s",
+      "executor": "per-vu-iterations",
+      "vus": 1,
+      "iterations": 1,
+      "maxDuration": "15m"
+    },
+    "alarm_management_external": {
+      "exec": "alarm_management_external",
+      "startTime": "20s",
+      "executor": "per-vu-iterations",
+      "vus": 1,
+      "iterations": 1,
+      "maxDuration": "10m"
+    },
+    "alarm_handling_validations": {
+      "exec": "alarm_handling_validations",
+      "startTime": "200s",
+      "executor": "per-vu-iterations",
+      "vus": 1,
+      "iterations": 1,
+      "maxDuration": "5m"
+    },
+    "Validate_messageConsumption": {
+      "exec": "Validate_messageConsumption",
+      "startTime": "300s",
+      "executor": "per-vu-iterations",
+      "vus": 1,
+      "iterations": 1,
+      "maxDuration": "25m"
+    }
+  }
+}

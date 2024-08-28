@@ -1,0 +1,114 @@
+# Default values for eric-oss-fls.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+#For use in minikube environments
+#global:
+#  pullSecret: armdocker-secret
+#  security:
+#    tls:
+#      enabled: false
+
+replicaCount: 1
+
+image:
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "1.0.0-19"         # ex. 1.0.0-0-10adc2e
+  rstate: "R1A"       # ex. R1A
+  repoPath: "proj-eric-oss-fls/proj-eric-oss-fls-drop"  # proj-eric-oss-fls/proj-eric-oss-fls-ci-internal
+  repoUrl: "armdocker.rnd.ericsson.se"    # armdocker.rnd.ericsson.se
+
+imagePullSecrets: []
+fullnameOverride: "eric-oss-fls"
+
+imageCredentials:
+  registry:
+# pullSecret: armdocker-secret
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+eric-data-document-database-pg:
+  global:
+    networkPolicy:
+      enabled: true
+    security:
+      tls:
+        enabled: false
+  # imageCredentials:
+  #   pullSecret: armdocker-secret
+  nameOverride: eric-oss-fls-enm-1-postgres-db
+  credentials:
+    kubernetesSecretName: eric-oss-fls-enm-1-usersecret
+  highAvailability:
+    replicaCount: 1
+  networkPolicy:
+    matchLabels: 
+      - eric-oss-fls-enm-1
+  podDisruptionBudget:
+    minAvailable: 0
+  service:
+    endpoints:
+      postgres:
+        tls:
+          enforced: Cleartext
+
+fns_mode: "-1"
+
+pipeline: 
+  enabled: true
+  radionode: 10000
+  pcc: 50
+  pcg: 50
+  lte_ctr: 10000
+  nr_ctr: 30000
+  ebsn: 5
+  cnf: 3240

@@ -1,0 +1,19 @@
+{{- if eq (include "tls-enabled" .) "True" }}
+apiVersion: siptls.sec.ericsson.com/v1
+kind: InternalCertificate
+metadata:
+  labels:
+{{- include "eric-oss-adc-app-engineering.labels" . | nindent 4 }}
+  name: {{ .Chart.Name }}-pm-server-int-cert
+spec:
+  certificate:
+    extendedKeyUsage:
+      tlsClientAuth: true
+      tlsServerAuth: true
+    subject:
+      cn: {{ .Chart.Name }}-pm-server
+  kubernetes:
+    certificateName: cert.pem
+    generatedSecretName: {{ .Chart.Name }}-pm-server-secret
+    privateKeyName: key.pem
+{{- end }}

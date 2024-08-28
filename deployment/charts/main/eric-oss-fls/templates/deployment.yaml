@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "eric-oss-fls.fullname" . }}
+  labels:
+    #app.kubernetes.io/name: "eric-pm-server"
+    {{- include "eric-oss-fls.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "eric-oss-fls.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "eric-oss-fls.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if include "eric-oss-fls.pullSecret" . }}
+      imagePullSecrets:
+        - name: {{ template "eric-oss-fls.pullSecret" . }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: "fls"
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "eric-oss-fls.imagePath" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: POSTGRESDB_CM_IP
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "eric-oss-fls.fullname" . }}
+                  key: postgresdb_ip
+            - name: POSTGRESDB_CM_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "eric-oss-fls.fullname" . }}
+                  key: postgresdb_port
+            - name: FLS_ENM_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: FNS_MODE
+              value: "{{ .Values.fns_mode }}"
+            - name: PIPELINE
+              value: "{{ .Values.pipeline.enabled }}"
+            - name: RadioNode
+              value: "{{ .Values.pipeline.radionode }}"
+            - name: Pcc
+              value: "{{ .Values.pipeline.pcc }}"
+            - name: Pcg
+              value: "{{ .Values.pipeline.pcg }}"
+            - name: NrCtr
+              value: "{{ .Values.pipeline.nr_ctr }}"
+            - name: LteCtr
+              value: "{{ .Values.pipeline.lte_ctr }}"
+            - name: Ebsn
+              value: "{{ .Values.pipeline.ebsn }}"
+            - name: Cnf
+              value: "{{ .Values.pipeline.cnf }}"
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+

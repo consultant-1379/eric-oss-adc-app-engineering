@@ -1,0 +1,85 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "eric-oss-adc-app-engineering.name" . }}-pre-requisite-ssm
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "2"
+    "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
+spec:
+  template:
+    metadata:
+      annotations:
+{{- include "eric-oss-adc-app-engineering.service-mesh-inject" .| nindent 8 }}
+{{- include "eric-oss-adc-app-engineering.service-mesh-proxy-config" .| nindent 8 }}
+      labels:
+{{- include "eric-oss-adc-app-engineering.service-mesh-inject" .| nindent 8 }}
+    spec:
+      imagePullSecrets:
+        - name: {{ index .Values "global" "pullSecret" }}
+      restartPolicy: Never
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
+      containers:
+        - name: eric-oss-sftp-filetrans-init
+          image: {{ index .Values "global" "registry" "url" }}/{{ index .Values "init" "repo" }}/{{ index .Values "eric-oss-adc-curl-init" "image" }}:{{ index .Values "eric-oss-adc-curl-init" "version" }}
+          command: [ 'sh', '-c']
+          args:
+          - |
+            sleepinSeconds=10
+            counter=25
+            i=1
+            while [[ $i -lt counter ]];
+            do
+                   healthCheck=`curl -X GET -Si  http://{{ index .Values "init" "connectedSystem" }}:80/actuator/health/` 
+                   echo "$healthCheck"
+                   echo "CSR Health check $i of $counter"
+                   if [[ "$healthCheck"  =~ "200" ]];then
+                        echo "CSR pod is UP and Healthy"
+                        break
+                   else
+                        echo "CSR Health check failed,retrying in $sleepinSeconds,attempts $i of $counter"
+                   fi
+                   sleep $sleepinSeconds
+                   let "i=i+1"
+            done
+            json_response=`curl -X GET  http://{{ index .Values "init" "connectedSystem" }}:80/subsystem-manager/v1/subsystems`
+            echo $json_response
+            declare -A id_to_enm_map
+            id_list=`echo $json_response | jq -c '.[] | .id' | xargs`
+            enm_id_list=`echo $json_response | jq -c '.[] | .name' | xargs`
+            id_array=($id_list)
+            enm_id_array=($enm_id_list)
+            echo $id_list
+            echo $enm_id_list
+            for i in "${!id_array[@]}"; do
+                id_to_enm_map[${id_array[i]}]=${enm_id_array[i]}
+            done
+            for id in ${id_array[@]}; do
+                if [[ ${id_to_enm_map[$id]} == "enm1" ]];then
+                    echo "Deleting enm1 entry"
+                    curl -X DELETE http://{{ index .Values "init" "connectedSystem" }}:80/subsystem-manager/v1/subsystems/${id}
+                fi
+                if [[ ${id_to_enm_map[$id]} == "enm2" ]];then
+                   echo "Deleting enm2 entry"
+                   curl -X DELETE http://{{ index .Values "init" "connectedSystem" }}:80/subsystem-manager/v1/subsystems/${id}
+                fi
+            done
+            curl -X POST http://{{ index .Values "init" "connectedSystem" }}:80/subsystem-manager/v1/subsystems  \
+            -H "Content-Type: application/json" -H "Accept: application/json, text/plain, */*" \
+            -d '{"name":"{{ index .Values "init" "enm-name" }}","url": "{{ index .Values "init" "url" }}.{{.Release.Namespace}}.svc.cluster.local:8080", "adapterLink": "{{ index .Values "init" "adapterLink" }}", "vendor":"Ericsson","connectionProperties": [ { "username": "{{ index .Values "init" "sftp-username" }}","password": "{{ index .Values "init" "sftp-password" }}", "scriptingVMs":"{{ index .Values "init" "scriptingVM" }}.{{.Release.Namespace}}.svc.cluster.local","sftpPort":"{{ index .Values "init" "sftp-port" }}"}],"subsystemType": { "type": "DomainManager","category": "Custom" } }'
+            curl -X POST http://{{ index .Values "init" "connectedSystem" }}:80/subsystem-manager/v1/subsystems  \
+            -H "Content-Type: application/json" -H "Accept: application/json, text/plain, */*" \
+            -d '{"name":"{{ index .Values "init" "enm2-name" }}","url": "{{ index .Values "init" "url-enm-stub-2" }}.{{.Release.Namespace}}.svc.cluster.local:8080", "adapterLink": "{{ index .Values "init" "adapterLink" }}", "vendor":"Ericsson","connectionProperties": [ { "username": "{{ index .Values "init" "sftp-username" }}","password": "{{ index .Values "init" "sftp-password" }}", "scriptingVMs":"{{ index .Values "init" "scriptingVM2" }}.{{.Release.Namespace}}.svc.cluster.local","sftpPort":"{{ index .Values "init" "sftp-port" }}"}],"subsystemType": { "type": "DomainManager","category": "Custom" } }'
+            {{- include "eric-oss-adc-app-engineering.service-mesh-sidecar-quit" .| nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 40514
+            capabilities:
+              drop:
+                - all

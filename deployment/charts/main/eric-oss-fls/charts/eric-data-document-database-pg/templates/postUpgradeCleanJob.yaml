@@ -1,0 +1,5 @@
+{{- if (eq (include "eric-data-document-database-pg.load-legecy-template-enabled" .) "true") }}
+{{- if eq (include "eric-data-document-database-pg.isMigrationRequired" .) "true" -}}
+  {{- include "eric-data-document-database-pg.cleanPGDataJob" .}}
+{{- end -}}
+{{- end }}

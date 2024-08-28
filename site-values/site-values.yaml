@@ -1,0 +1,51 @@
+eric-oss-fls-enm-1:
+  pipeline:
+    radionode: 20000
+
+eric-oss-pm-solution-enm-1:
+  nr:
+    sims_per_enm: 8
+    nes_per_sim: 1410
+    total_started: 11280
+    stats_files: 11280
+    ctr_files: 30000
+  lte_dg2:
+    sims_per_enm: 8
+    nes_per_sim: 1090
+    total_started: 8720
+    stats_files: 8720
+
+env:
+  STAGING_TYPE: "APPLICATION"
+  ENVIRONMENT: "development"
+  hostname: "ADC_HOST_REPLACE"
+  OPTIONS_FILE: "default.options.json"
+  sftp_podname : "kubernetes-pods-istio-secure"
+  fns_job : "kubernetes-pods-istio-secure"
+  Ran_parser_job : "kubernetes-pods-istio-secure"
+  pmStatsfilecount : 23240
+  GAS_hostname : "GAS_HOST_REPLACE"
+  TLS : true                     # In AS-> TLS:true , PS-> TLS:false
+  metrics_url : "gas_url"    # Defines which URL to fetch metrics in AS="gas_url"[TLS:true], PS="pmserver_url"[TLS:false]
+kafka-wrapper:
+  enabled: true
+  eric_data_object_storage:
+    enabled: true
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "600m"
+    limits:
+      memory: "1024Mi"
+      cpu: "1100m"
+  kafka:
+    adcload: true
+    topicbuffertime: "540"
+    adctotalmessages: 764530000
+    adcmsgsperreplica: 69502727
+    adctotaltopics:
+      - "5g-pm-event-file-transfer-and-processing--standardized"
+      - "5g-pm-event-file-transfer-and-processing--ericsson"
+  env:
+    BOOTSTRAP_EXTERNAL: "KAFKA_BOOTSTRAP_HOST_REPLACE"
+    IAM_URI: "EIC_HOST_REPLACE"

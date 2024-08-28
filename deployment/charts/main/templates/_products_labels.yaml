@@ -1,0 +1,9 @@
+{{- define "eric-oss-adc-app-engineering.labels" }}
+app.kubernetes.io/name: {{ template "eric-oss-adc-app-engineering.name" . }}
+app.kubernetes.io/version: {{ template "eric-oss-adc-app-engineering.version" . }}
+app.kubernetes.io/instance: {{ .Release.Name | quote }}
+app: {{ template "eric-oss-adc-app-engineering.name" . }}
+chart: {{ template "eric-oss-adc-app-engineering.chart" . }}
+release: {{ .Release.Name | quote }}
+heritage: {{ .Release.Service | quote }}
+{{- end}}
